@@ -17,31 +17,43 @@ const H = 1024;
 
 // ---------------------------------------------------------------- palette
 type RGB = [number, number, number];
-const PAPER: RGB = [248, 243, 232];
-const INK: RGB = [22, 22, 22];
-const RED: RGB = [178, 28, 34];
-const DARKRED: RGB = [140, 18, 24];
-const BLUE: RGB = [28, 76, 134];
-const NAVY: RGB = [16, 38, 68];
-const HALLTOP: RGB = [24, 42, 72];
-const HALLBOT: RGB = [52, 78, 116];
-const TEAL: RGB = [44, 108, 140];
-const SAND: RGB = [228, 210, 172];
-const WOOD: RGB = [118, 84, 50];
-const WOODDARK: RGB = [88, 60, 34];
-const CREAM: RGB = [198, 186, 158];
-const WHITE: RGB = [255, 255, 255];
-const SKY: RGB = [206, 228, 240];
-const OCEAN: RGB = [52, 110, 168];
-const LAND: RGB = [88, 152, 94];
-const LAND2: RGB = [172, 142, 92];
-const ORANGE: RGB = [234, 122, 38];
-const GOLD: RGB = [246, 202, 82];
-const GREEN: RGB = [52, 168, 92];
-const DARKGREEN: RGB = [16, 44, 30];
-const GREY: RGB = [118, 118, 116];
-const SMOKE: RGB = [152, 152, 150];
-const DARKGREY: RGB = [58, 58, 62];
+
+// One constructor for every colour, so the palette below reads as plain
+// data (name -> rgb triplet) instead of repeating the tuple type each line.
+const rgb = (r: number, g: number, b: number): RGB => [r, g, b];
+
+// Paper and ink.
+const PAPER: RGB = rgb(248, 243, 232);
+const INK: RGB = rgb(22, 22, 22);
+const WHITE: RGB = rgb(255, 255, 255);
+const GREY: RGB = rgb(118, 118, 116);
+const SMOKE: RGB = rgb(152, 152, 150);
+const DARKGREY: RGB = rgb(58, 58, 62);
+
+// Accent reds and blues.
+const RED: RGB = rgb(178, 28, 34);
+const DARKRED: RGB = rgb(140, 18, 24);
+const BLUE: RGB = rgb(28, 76, 134);
+const NAVY: RGB = rgb(16, 38, 68);
+const TEAL: RGB = rgb(44, 108, 140);
+
+// Summit-hall wall gradient (top -> bottom) and wood.
+const HALLTOP: RGB = rgb(24, 42, 72);
+const HALLBOT: RGB = rgb(52, 78, 116);
+const WOOD: RGB = rgb(118, 84, 50);
+const WOODDARK: RGB = rgb(88, 60, 34);
+const CREAM: RGB = rgb(198, 186, 158);
+const SAND: RGB = rgb(228, 210, 172);
+
+// Globe and landscape.
+const SKY: RGB = rgb(206, 228, 240);
+const OCEAN: RGB = rgb(52, 110, 168);
+const LAND: RGB = rgb(88, 152, 94);
+const LAND2: RGB = rgb(172, 142, 92);
+const ORANGE: RGB = rgb(234, 122, 38);
+const GOLD: RGB = rgb(246, 202, 82);
+const GREEN: RGB = rgb(52, 168, 92);
+const DARKGREEN: RGB = rgb(16, 44, 30);
 
 // ---------------------------------------------------------------- canvas
 const px = new Uint8Array(W * H * 3);
@@ -148,7 +160,9 @@ function flare(cx: number, cy: number, r: number, c: RGB, spikes = 10): void {
 }
 
 // ---------------------------------------------------------------- PNG out
-const CRC: number[] = (() => {
+// Build the CRC-32 lookup table once at load time (polynomial 0xEDB88320,
+// the reversed form of the standard CRC-32 polynomial).
+function buildCrcTable(): number[] {
   const tab: number[] = [];
   for (let n = 0; n < 256; n++) {
     let c = n;
@@ -156,7 +170,9 @@ const CRC: number[] = (() => {
     tab.push(c >>> 0);
   }
   return tab;
-})();
+}
+
+const CRC: number[] = buildCrcTable();
 
 function crc32(buf: Buffer): number {
   let c = 0xffffffff;
